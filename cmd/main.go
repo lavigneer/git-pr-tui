@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -52,6 +53,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmd := exec.Command("xdg-open", *pr.HTMLURL) //nolint gosec
 				return m, tea.ExecProcess(cmd, nil)
 			}
+		case "c":
+			pr := m.prs[m.table.Cursor()]
+			if pr != nil && (strings.HasPrefix(*pr.HTMLURL, "https://") || strings.HasPrefix(*pr.HTMLURL, "http://")) {
+				fetchCmd := exec.Command("git", "fetch", "origin", *pr.MergeCommitSHA)         //nolint gosec
+				checkoutCmd := exec.Command("git", "checkout", "--detach", *pr.MergeCommitSHA) //nolint gosec
+				return m, tea.Sequence(
+					tea.ExecProcess(fetchCmd, nil),
+					tea.ExecProcess(checkoutCmd, nil),
+				)
+			}
 		}
 	default:
 		break
@@ -96,6 +107,15 @@ func getRepoAndOwner() (string, string) {
 }
 
 func main() {
+	if len(os.Getenv("DEBUG")) > 0 {
+		f, err := tea.LogToFile("debug.log", "debug")
+		if err != nil {
+			fmt.Println("fatal:", err)
+			os.Exit(1)
+		}
+		defer f.Close()
+	}
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")

@@ -23,7 +23,7 @@ test:
 # Clean the binary
 clean:
 	@echo "Cleaning..."
-	@rm -f main
+	@rm -f tmp/main
 
 # Live Reload
 watch:
