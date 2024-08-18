@@ -48,11 +48,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			pr := m.prs[m.table.Cursor()]
-			if pr != nil {
-				cmd := exec.Command("xdg-open", *pr.HTMLURL)
+			if pr != nil && (strings.HasPrefix(*pr.HTMLURL, "https://") || strings.HasPrefix(*pr.HTMLURL, "http://")) {
+				cmd := exec.Command("xdg-open", *pr.HTMLURL) //nolint gosec
 				return m, tea.ExecProcess(cmd, nil)
 			}
 		}
+	default:
+		break
 	}
 	m.table, cmd = m.table.Update(msg)
 	return m, cmd
@@ -102,6 +104,7 @@ func main() {
 	owner, repo := getRepoAndOwner()
 
 	githubClient := github.NewClient(nil).WithAuthToken(githubAPIToken)
+	// user, _, err := githubClient.Users.Get(context.Background(), "")
 	prs, _, err := githubClient.PullRequests.List(context.Background(), owner, repo, nil)
 	if err != nil {
 		log.Fatalf("Error fetching prs %s", err)
