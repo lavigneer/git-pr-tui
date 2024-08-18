@@ -1,0 +1,14 @@
+linters:
+  enable-all: true
+  disable:
+    - funlen
+    - depguard
+    - gomnd
+    - mnd
+    - ireturn
+    - varnamelen
+    - wsl
+    - execinquery
+    - nlreturn
+    - lll
+    - gochecknoglobals
